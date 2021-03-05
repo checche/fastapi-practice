@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from pydantic import BaseModel
 
 
@@ -24,6 +24,25 @@ class Item(BaseModel):
 @app.get('/')
 async def root():
     return {'message': 'Hello World'}
+
+
+@app.get('/items/')
+async def read_items(
+    q: Optional[list[str]] = Query(
+        None,
+        alias="item-query",
+        title="Query string",
+        description="Query string for the items to search in the database that have a good match",
+        min_length=3,
+        max_length=50,
+        regex="^fixedquery$",
+        deprecated=True,
+    )
+):
+    results = {'items': [{'item_id': 'Foo'}, {'item_id': 'Bar'}]}
+    if q:
+        results.update({'q': q})
+    return results
 
 
 @app.put('/items/{item_id}')
