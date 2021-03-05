@@ -14,16 +14,24 @@ class ModelName(str, Enum):
     lenet = 'lenet'
 
 
-fake_items_db = [
-    {'item_name': 'Foo'},
-    {'item_name': 'Bar'},
-    {'item_name': 'Baz'},
-]
+class Item(BaseModel):
+    name: str
+    description: Optional[str] = None
+    price: float
+    tax: Optional[float] = None
 
 
 @app.get('/')
 async def root():
     return {'message': 'Hello World'}
+
+
+@app.put('/items/{item_id}')
+async def create_item(item_id: int, item: Item, q: Optional[str] = None):
+    result = {'item_id': item_id, **item.dict()}
+    if q:
+        result.update({'q': q})
+    return result
 
 
 @app.get('/items/{item_id}')
