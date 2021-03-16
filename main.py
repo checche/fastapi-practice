@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional
 
-from fastapi import FastAPI, Path, Query
+from fastapi import Body, FastAPI, Path, Query
 from pydantic import BaseModel
 
 
@@ -19,6 +19,11 @@ class Item(BaseModel):
     description: Optional[str] = None
     price: float
     tax: Optional[float] = None
+
+
+class User(BaseModel):
+    username: str
+    full_name: Optional[str] = None
 
 
 @app.get('/')
@@ -41,11 +46,9 @@ async def read_items(
 
 
 @app.put('/items/{item_id}')
-async def create_item(item_id: int, item: Item, q: Optional[str] = None):
-    result = {'item_id': item_id, **item.dict()}
-    if q:
-        result.update({'q': q})
-    return result
+async def update_item(item_id: int, item: Item = Body(..., embed=True)):
+    results = {"item_id": item_id, 'item': item}
+    return results
 
 
 @app.get('/users/me')
