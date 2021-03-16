@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Path, Query
 from pydantic import BaseModel
 
 
@@ -26,22 +26,17 @@ async def root():
     return {'message': 'Hello World'}
 
 
-@app.get('/items/')
+@app.get('/items/{item_id}')
 async def read_items(
-    q: Optional[list[str]] = Query(
-        None,
-        alias="item-query",
-        title="Query string",
-        description="Query string for the items to search in the database that have a good match",
-        min_length=3,
-        max_length=50,
-        regex="^fixedquery$",
-        deprecated=True,
-    )
+    *,
+    item_id: int = Path(..., title='The ID of the item to get', ge=0, le=1000),
+    q: str,
+    size: float = Query(..., gt=0, lt=10.5),
 ):
-    results = {'items': [{'item_id': 'Foo'}, {'item_id': 'Bar'}]}
+    results = {'item_id': item_id}
     if q:
         results.update({'q': q})
+    print(results)
     return results
 
 
@@ -51,14 +46,6 @@ async def create_item(item_id: int, item: Item, q: Optional[str] = None):
     if q:
         result.update({'q': q})
     return result
-
-
-@app.get('/items/{item_id}')
-async def read_user_item(
-    item_id: str, needy: str, skip: int = 0, limit: Optional[int] = None
-):
-    item = {'item_id': item_id, 'needy': needy, 'skip': skip, 'limit': limit}
-    return item
 
 
 @app.get('/users/me')
