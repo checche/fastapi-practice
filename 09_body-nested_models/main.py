@@ -9,9 +9,9 @@ app = FastAPI()
 
 
 class ModelName(str, Enum):
-    alexnet = 'alexnet'
-    resnet = 'resnet'
-    lenet = 'lenet'
+    alexnet = "alexnet"
+    resnet = "resnet"
+    lenet = "lenet"
 
 
 class Image(BaseModel):
@@ -40,65 +40,65 @@ class User(BaseModel):
     full_name: Optional[str] = None
 
 
-@app.get('/')
+@app.get("/")
 async def root():
-    return {'message': 'Hello World'}
+    return {"message": "Hello World"}
 
 
-@app.get('/items/{item_id}')
+@app.get("/items/{item_id}")
 async def read_items(
     *,
-    item_id: int = Path(..., title='The ID of the item to get', ge=0, le=1000),
+    item_id: int = Path(..., title="The ID of the item to get", ge=0, le=1000),
     q: str,
     size: float = Query(..., gt=0, lt=10.5),
 ):
-    results = {'item_id': item_id}
+    results = {"item_id": item_id}
     if q:
-        results.update({'q': q})
+        results.update({"q": q})
     print(results)
     return results
 
 
-@app.put('/items/{item_id}')
+@app.put("/items/{item_id}")
 async def update_item(item_id: int, item: Item):
-    results = {"item_id": item_id, 'item': item}
+    results = {"item_id": item_id, "item": item}
     return results
 
 
-@app.get('/users/me')
+@app.get("/users/me")
 async def read_user_me():
-    return {'user_id': 'the current user'}
+    return {"user_id": "the current user"}
 
 
-@app.get('/users/{user_id}')
+@app.get("/users/{user_id}")
 async def read_user(user_id: str):
-    return {'user_id': user_id}
+    return {"user_id": user_id}
 
 
-@app.get('/models/{model_name}')
+@app.get("/models/{model_name}")
 async def get_model(model_name: ModelName):
     # ModelNameのメンバとの比較
     if model_name == ModelName.alexnet:
-        return {'model_name': model_name, 'message': 'Deep Learning FTW!'}
+        return {"model_name": model_name, "message": "Deep Learning FTW!"}
 
     # 実際の値の取得
-    if model_name.value == 'lenet':
-        return {'model_name': model_name, 'message': 'LeCNN all the images'}
+    if model_name.value == "lenet":
+        return {"model_name": model_name, "message": "LeCNN all the images"}
 
-    return {'model_name': model_name, 'message': 'Have some residuals'}
+    return {"model_name": model_name, "message": "Have some residuals"}
 
 
-@app.get('/files/{file_path:path}')
+@app.get("/files/{file_path:path}")
 async def read_file(file_path: str):
-    return {'file_path': file_path}
+    return {"file_path": file_path}
 
 
-@app.post('/offers/')
+@app.post("/offers/")
 async def create_offer(offer: Offer):
     return offer
 
 
-@app.post('/images/multiple/')
+@app.post("/images/multiple/")
 async def create_multiple_images(images: list[Image]):
     return images
 
