@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Optional
 
 from fastapi import Body, FastAPI, Path, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 
 
 app = FastAPI()
@@ -14,11 +14,25 @@ class ModelName(str, Enum):
     lenet = 'lenet'
 
 
+class Image(BaseModel):
+    url: HttpUrl
+    name: str
+
+
 class Item(BaseModel):
     name: str
     description: Optional[str] = None
     price: float
     tax: Optional[float] = None
+    tags: set[str] = set()
+    image: Optional[list[Image]] = None
+
+
+class Offer(BaseModel):
+    name: str
+    description: Optional[str] = None
+    price: float
+    items: list[Item]
 
 
 class User(BaseModel):
@@ -46,7 +60,7 @@ async def read_items(
 
 
 @app.put('/items/{item_id}')
-async def update_item(item_id: int, item: Item = Body(..., embed=True)):
+async def update_item(item_id: int, item: Item):
     results = {"item_id": item_id, 'item': item}
     return results
 
@@ -77,3 +91,18 @@ async def get_model(model_name: ModelName):
 @app.get('/files/{file_path:path}')
 async def read_file(file_path: str):
     return {'file_path': file_path}
+
+
+@app.post('/offers/')
+async def create_offer(offer: Offer):
+    return offer
+
+
+@app.post('/images/multiple/')
+async def create_multiple_images(images: list[Image]):
+    return images
+
+
+@app.post("/index-weights/")
+async def create_index_weights(weights: dict[int, float]):
+    return weights
