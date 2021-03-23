@@ -1,7 +1,9 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, status
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, PlainTextResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from pydantic import BaseModel
 
 
 app = FastAPI()
@@ -42,6 +44,7 @@ async def read_unicorn(name: str):
     return {"unicorn_name": name}
 
 
+# StarletteのHTTPExceptionのハンドラを書くと良い。
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request, exc):
     return PlainTextResponse(str(exc.detail), status_code=exc.status_code)
@@ -49,8 +52,11 @@ async def http_exception_handler(request, exc):
 
 # validation exceptionのオーバーライド
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request, exc):
-    return PlainTextResponse(str(exc), status_code=400)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content=jsonable_encoder({"detail": exc.errors(), "body": exc.body}),
+    )
 
 
 @app.get("/items2/{item_id}")
@@ -58,3 +64,13 @@ async def read_item2(item_id: int):
     if item_id == 3:
         raise HTTPException(status_code=418, detail="Nope! I don't like 3.")
     return {"item_id": item_id}
+
+
+class Item(BaseModel):
+    title: str
+    size: int
+
+
+@app.post("/items/")
+async def create_item(item: Item):
+    return item
