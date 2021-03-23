@@ -4,6 +4,10 @@ from fastapi.responses import JSONResponse
 app = FastAPI()
 
 
+class UnicornException(Exception):
+    def __init__(self, name: str):
+        self.name = name
+
 
 items = {"foo": "The Foo Wrestlers"}
 
@@ -19,3 +23,17 @@ async def read_item(item_id: str):
     return {"item": items[item_id]}
 
 
+# Exceptionが発生したときに走るハンドラ
+@app.exception_handler(UnicornException)
+async def unicorn_exception_handler(request: Request, exc: UnicornException):
+    return JSONResponse(
+        status_code=418,
+        content={"message": f"Oops! {exc.name} did something. There goes a rainbow..."},
+    )
+
+
+@app.get("/unicorns/{name}")
+async def read_unicorn(name: str):
+    if name == "yolo":
+        raise UnicornException(name=name)
+    return {"unicorn_name": name}
