@@ -48,11 +48,12 @@ async def read_unicorn(name: str):
     return {"unicorn_name": name}
 
 
-# StarletteのHTTPExceptionのハンドラを書くと良い。
+# HTTPExceptionをオーバーライドするには
+# StarletteのHTTPExceptionをつかう
 @app.exception_handler(StarletteHTTPException)
 async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
     print(f"OMG! An HTTP error!: {repr(exc)}")
-    return await http_exception_handler(request, exc)
+    return await http_exception_handler(request, exc)  # 既存のハンドラの再利用
 
 
 # validation exceptionのオーバーライド
